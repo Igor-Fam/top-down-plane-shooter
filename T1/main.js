@@ -69,8 +69,8 @@ window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)},
 var keyboard = new KeyboardState();
 
 
-// create the 2 ground planes
-let plane = new Object3D();
+// create the 2 valleys
+let plane = new Object3D(); //plane = vale
 plane.add(vale);
 plane.children[0].receiveShadow = true;
 plane.rotateX(-Math.PI/2);
