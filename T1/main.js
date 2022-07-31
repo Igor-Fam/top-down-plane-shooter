@@ -33,7 +33,7 @@ var godMode = false;
 var playerDead = false;
 var levelFinished;
 var pause = false;
-let frameCounter = 0;
+export var frameCounter = 0;
 export const GAME_SPEED = 0.3;
 
 var bgm = new Audio('assets/bgm.mp3');
@@ -68,9 +68,10 @@ window.addEventListener( 'resize', function(){onWindowResize(camera, renderer)},
 var keyboard = new KeyboardState();
 
 
-// create the 2 ground planes
-let plane = new Object3D();
+// create the 2 valleys
+let plane = new Object3D(); //plane = vale
 plane.add(vale);
+plane.children[0].receiveShadow = true;
 plane.rotateX(-Math.PI/2);
 plane.scale.x= 120;
 plane.scale.y= 150;
@@ -104,8 +105,8 @@ var water = new Water( waterGeometry, {
   color: params.color,
   scale: params.scale,
   flowDirection: new THREE.Vector2( params.flowX, params.flowY ),
-  textureWidth: 240,
-  textureHeight: 240
+  textureWidth: 300,
+  textureHeight: 300
 } );
 
 water.position.y = 1;

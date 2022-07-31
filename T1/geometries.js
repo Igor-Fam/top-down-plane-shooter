@@ -47,6 +47,7 @@ export function loadGLTFFile(modelName, visibility, desiredScale, object)
     obj.traverse( function ( child ) {
       if ( child ) {
           child.castShadow = true;
+          child.receiveShadow = true;
       }
     });
     obj.traverse( function( node )
@@ -152,6 +153,9 @@ loadGLTFFile("E2", true, 1, E2);
 
 export let E3 = new Object3D;
 loadGLTFFile("E3", true, 1, E3);
+
+export let missile = new Object3D;
+loadGLTFFile("missile",true,1,missile);
 
 export let launcher = new Object3D;
 loadOBJFile("launcher", true, 1, launcher);
