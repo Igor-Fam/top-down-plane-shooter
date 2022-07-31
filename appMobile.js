@@ -1,12 +1,12 @@
 import * as THREE from  'three';
-import KeyboardState from '../libs/util/KeyboardState.js';
+import KeyboardState from './libs/util/KeyboardState.js';
 
 import {initRenderer, 
         initCamera,
         onWindowResize, 
         InfoBox,
       createGroundPlaneWired,
-      degreesToRadians} from "../libs/util/util.js";
+      degreesToRadians} from "./libs/util/util.js";
 import Airplane from './airplane.js';
 import Enemy from './enemy.js';
 import Projectile from './projectile.js';
@@ -15,10 +15,10 @@ import playLevel from './level.js';
 import Missile from './missile.js';
 import Recharge from './recharge.js';
 import { damageInfo } from './damageView.js';
-import { DirectionalLight, Object3D, Plane, Vector3 } from '../build/three.module.js';
-import { OrbitControls } from '../build/jsm/controls/OrbitControls.js';
+import { DirectionalLight, Object3D, Plane, Vector3 } from './build/three.module.js';
+import { OrbitControls } from './build/jsm/controls/OrbitControls.js';
 import { loadGLTFFile, vale, vale2 } from './geometries.js';
-import { Water } from '../build/jsm/objects/Water2.js';
+import { Water } from './build/jsm/objects/Water2.js';
 
 export var scene;
 let renderer, camera, orbit; // Initial variables
@@ -32,7 +32,8 @@ orbit = new OrbitControls( camera, renderer.domElement ); // Enable mouse rotati
 var godMode = false;
 var playerDead = false;
 var levelFinished;
-var pause = false;
+var pause = true;
+var launching = false;
 let frameCounter = 0;
 export const GAME_SPEED = 0.3;
 
@@ -189,17 +190,7 @@ function moveRecharges(){
     }
   }
 }
-let windowOnFocus = true
 
-//verifica se janela está aberta
-
-document.addEventListener("visibilitychange", (event) => {
-  if (document.visibilityState !== "visible") {
-    windowOnFocus = false
-  } else {
-   windowOnFocus = true
-  }
-});
 
 //criação e movimentação dos inimigos e recargas
 
@@ -223,13 +214,24 @@ async function shoot(){
 let missileGeometry = new THREE.CylinderGeometry(1.8, 1.8, 8, 32);
 let missileMaterial = new THREE.MeshLambertMaterial( {color: "white"} );
 
-function launchMissile(){
-  if(playerDead)
-    return;
-  let missile= new Missile(missileGeometry, missileMaterial);
-  missile.position.set(airplane.position.x, airplane.position.y, airplane.position.z - 10);
-  scene.add(missile);
+function delay(time) {
+  return new Promise(resolve => setTimeout(resolve, time));
 }
+
+async function launchMissile(){
+    console.log('launchmissile')
+    if(playerDead)
+      return;
+    let missile= new Missile(missileGeometry, missileMaterial);
+    missile.position.set(airplane.position.x, airplane.position.y, airplane.position.z - 10);
+    scene.add(missile);
+    if(!launching)
+    return;
+    await delay(500);
+    if(launching)
+      launchMissile();
+  }
+
 
 //colisões
 
@@ -364,8 +366,13 @@ function gameOver(){
     })
     recharges = [];
   }
+  restartGame();
 }
 
+ async function restartGame(){
+  await delay(5000)
+  window.location.reload();
+}
 // movimenta os planos do chão, dando sensação de movimento
 
 function movingPlanes()
@@ -382,6 +389,72 @@ function movingPlanes()
  }
 plane2.translateY(-GAME_SPEED);
 }
+
+//controle do avião porjoystick e botões
+
+//botões
+const shootButton = document.getElementById('shoot');
+shootButton.addEventListener('touchstart', (event) => {
+  if(!airplane.shooting){
+    airplane.shooting = true;
+    airplane.shootingTimer = 0;
+    shoot();
+  }
+});
+
+shootButton.addEventListener('touchend', (event) => {
+  console.log('touch end',event)
+  airplane.shooting = false;
+
+});
+
+const launchButton = document.getElementById('launch');
+launchButton.addEventListener('touchstart', (event)=>{
+  console.log('touch start',event)
+
+  if(!launching){
+    launching = true;
+    launchMissile();
+  }
+})
+
+launchButton.addEventListener('touchend', (event) => {
+  console.log('touch end',event)
+  launching = false;
+
+});
+
+
+//joysticks
+
+function addJoysticks(){
+   
+    // Details in the link bellow:
+    // https://yoannmoi.net/nipplejs/
+  
+    let joystickL = nipplejs.create({
+      zone: document.getElementById('joystickWrapper1'),
+      mode: 'static',
+      position: { top: '-80px', left: '80px' }
+    });
+    
+    joystickL.on('move', function (evt, data) {  
+      const forward = data.vector.y
+      const turn = data.vector.x
+  
+      if (forward > 0) 
+        airplane.moveUp();
+      else if (forward < 0)
+      airplane.moveDown();
+  
+      if (turn > 0) 
+        airplane.moveRight()
+      else if (turn < 0)
+        airplane.moveLeft()
+    })
+  
+
+}  
 
 // controle do avião por teclado
 
@@ -427,17 +500,17 @@ function keyboardUpdate() {
 }
 
 //Interface pra mapa de teclas
-let controls = new InfoBox();
-  controls.add("Plane Shooter");
-  controls.addParagraph();
-  controls.add("Mapa de teclas");
-  controls.add("* Setas movem o avião nas respectivas direções");
-  controls.add("* CTRL para atirar projéteis");
-  controls.add("* Espaço para lançar mísseis");
-  controls.add("* Tecla G para ativar modo de testes");
-  controls.add("* Tecla ENTER para reiniciar o jogo caso perca ou chegue no final");
+// let controls = new InfoBox();
+//   controls.add("Plane Shooter");
+//   controls.addParagraph();
+//   controls.add("Mapa de teclas");
+//   controls.add("* Setas movem o avião nas respectivas direções");
+//   controls.add("* CTRL para atirar projéteis");
+//   controls.add("* Espaço para lançar mísseis");
+//   controls.add("* Tecla G para ativar modo de testes");
+//   controls.add("* Tecla ENTER para reiniciar o jogo caso perca ou chegue no final");
 
-  controls.show();
+//   controls.show();
 
 //Interface de danos
 const damageControl = new damageInfo();
@@ -451,6 +524,7 @@ function updateDamageView(){
 //Terminar jogo
 export function finishLevel(){
   levelFinished = true;
+  restartGame();
 }
 
 
@@ -478,6 +552,29 @@ export function Timer(callback, delay) {
   this.resume();
 }
 
+//start game
+export function onStartButtonPressed() {
+  
+  const loadingScreen = document.getElementById( 'loading-screen' );
+  loadingScreen.transition = 0;
+  loadingScreen.classList.add( 'fade-out' );
+  loadingScreen.addEventListener( 'transitionend', (e) => {
+    const element = e.target;
+    element.remove();  
+  });  
+  let startGameEvent = new Event("startGame");
+
+  pause = false;
+
+  addJoysticks();
+  // Config and play the loaded audio
+  // let sound = new THREE.Audio( new THREE.AudioListener() );
+  // audioLoader.load( audioPath, function( buffer ) {
+  //   sound.setBuffer( buffer );
+  //   sound.setLoop( true );
+  //   sound.play(); 
+  // });
+}
 function render()
 {
   scroller.translateZ(GAME_SPEED);
@@ -507,6 +604,7 @@ function render()
       checkPlaneDamage();
     }
     if(playerDead){
+      pause= true;
       gameOver();
     }
   }
