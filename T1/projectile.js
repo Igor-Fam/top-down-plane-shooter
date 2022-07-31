@@ -47,7 +47,7 @@ export default class Projectile extends THREE.Object3D{
                 }
             }
 
-            if(absolutePosition.z <= -190 || absolutePosition.z >= 150 || absolutePosition.x >= 370 || absolutePosition.x <= -370){ 
+            if(absolutePosition.z <= -220 || absolutePosition.z >= 150 || absolutePosition.x >= 370 || absolutePosition.x <= -370){ 
                 // remove projétil se estiver fora dos limites
                 scene.remove(Projectile.projectiles[i]); 
                 Projectile.projectiles.splice(i, 1); 

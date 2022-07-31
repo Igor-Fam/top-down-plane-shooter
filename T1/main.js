@@ -36,7 +36,6 @@ var pause = false;
 let frameCounter = 0;
 export const GAME_SPEED = 0.3;
 
-var explosionAudio = new Audio('assets/explosion.mp3');
 var bgm = new Audio('assets/bgm.mp3');
 bgm.loop = true;
 bgm.play();
@@ -210,9 +209,11 @@ render();
 let projectileGeometry = new THREE.SphereGeometry(1.5);
 let projectileMaterial = new THREE.MeshLambertMaterial( {color: "rgb(255, 255, 0)"} );
 
-async function shoot(){
+function shoot(){
   if(playerDead)
     return;
+  let shotAudio = new Audio('assets/plane-shot.mp3');
+  shotAudio.play();
   let projectile = new Projectile(projectileGeometry, projectileMaterial);
   projectile.position.set(airplane.position.x, airplane.position.y, airplane.position.z - 10);
   scene.add(projectile);
@@ -240,6 +241,7 @@ function checkCollisions(){
       if(!(Projectile.projectiles[i].isEnemy) && enemies[j].position.y > 60){
         if(intersectSphereBox(Projectile.projectiles[i].children[0], enemies[j])){
           enemies[j].isDead = true;
+          let explosionAudio = new Audio('assets/explosion.mp3');
           explosionAudio.play();
           dyingEnemies.push(enemies[j]);
           enemies.splice(j,1);
@@ -254,6 +256,7 @@ function checkCollisions(){
     for(let i = 0; i<Missile.missiles.length; i++){
       if(enemies[j].position.y < 60){
         if(intersectBoxes(Missile.missiles[i], enemies[j])){
+          let explosionAudio = new Audio('assets/explosion.mp3');
           explosionAudio.play();
           dyingEnemies.push(enemies[j]);
           enemies[j].isDead = true;
@@ -268,6 +271,8 @@ function checkCollisions(){
 
     //colisão do avião com inimigo do ar, dano 2
     if(intersectBoxes(airplane.children[0], enemies[j])){
+      let explosionAudio = new Audio('assets/explosion.mp3');
+      explosionAudio.play();
       dyingEnemies.push(enemies[j]);
       enemies[j].isDead = true;
       enemies.splice(j,1);
@@ -281,6 +286,8 @@ function checkCollisions(){
   for(let i = 0; i<Projectile.projectiles.length; i++){
     if(Projectile.projectiles[i].isEnemy){
       if(intersectSphereBox(Projectile.projectiles[i].children[0], airplane.children[0])){
+        let explosionAudio = new Audio('assets/explosion.mp3');
+        explosionAudio.play();
         if(!godMode)
           airplane.hit(1);
         updateDamageView();
@@ -319,7 +326,7 @@ function removeEnemies(){
   
   for(let i = 0; i<dyingEnemies.length; i++){
     dyingEnemies[i].fall();
-    if(dyingEnemies[i].children[0].scale.x<=0){
+    if(dyingEnemies[i].explosionFrame >= 15){
       scene.remove(dyingEnemies[i]);
       dyingEnemies.splice(i,1);
     }  
