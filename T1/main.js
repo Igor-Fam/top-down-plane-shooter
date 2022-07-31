@@ -30,7 +30,6 @@ camera = initCamera(new THREE.Vector3(0, 300, 200)); // Init camera in this posi
 orbit = new OrbitControls( camera, renderer.domElement ); // Enable mouse rotation, pan, zoom etc
 
 var godMode = false;
-var shooting = false;
 var playerDead = false;
 var levelFinished;
 var pause = false;
@@ -150,7 +149,11 @@ function moveEnemies(){
   {
     if(enemies[i].canMove()){
       enemies[i].move();
-      enemies[i].shoot();
+      if(enemies[i].shootingTimer == 170){
+        enemies[i].shoot();
+      } else {
+        enemies[i].shootingTimer++;
+      }
     }
     else{
       //remove um inimigo do vetor e também da cena quando atingir os limites do plano
@@ -205,24 +208,15 @@ render();
 
 // disparo de projéteis
 
-function delay(time) {
-  return new Promise(resolve => setTimeout(resolve, time));
-}
-
 let projectileGeometry = new THREE.SphereGeometry(1.5);
 let projectileMaterial = new THREE.MeshLambertMaterial( {color: "rgb(255, 255, 0)"} );
 
-async function spawnProjectiles(){
+async function shoot(){
   if(playerDead)
     return;
   let projectile = new Projectile(projectileGeometry, projectileMaterial);
   projectile.position.set(airplane.position.x, airplane.position.y, airplane.position.z - 10);
   scene.add(projectile);
-  if(!shooting)
-    return;
-  await delay(500);
-  if(shooting)
-    spawnProjectiles();
 }
 
 //lançamento de misseis
@@ -381,13 +375,13 @@ function movingPlanes()
   {
     plane.position.set(0,-100,-1050);
   }
- plane.translateY(-GAME_SPEED*4);
+ plane.translateY(-GAME_SPEED);
 
  if(plane2.position.z > 750)
  {
    plane2.position.set(0,-100,-1050);
  }
-plane2.translateY(-GAME_SPEED*4);
+plane2.translateY(-GAME_SPEED);
 }
 
 // controle do avião por teclado
@@ -401,16 +395,17 @@ window.addEventListener('keydown', function(e) {
     pause = !pause;
   }
   if(e.key == 'Control'){
-    if(!shooting){
-      shooting = true;
-      spawnProjectiles();
+    if(!airplane.shooting){
+      airplane.shooting = true;
+      airplane.shootingTimer = 0;
+      shoot();
     }
   }
 });
 
 window.addEventListener('keyup', function(e) {
   if(e.key == 'Control'){
-    shooting = false;
+    airplane.shooting = false;
   }
 });
 
@@ -431,12 +426,6 @@ function keyboardUpdate() {
     }
   }
 }
-
-
-
-
-
-
 
 //Interface pra mapa de teclas
 let controls = new InfoBox();
@@ -503,8 +492,15 @@ function render()
     moveEnemies();
     moveRecharges();
     if(!levelFinished){
-      // if(!shooting)
-      //   spawnProjectiles();
+      if(airplane.shooting){
+        airplane.shootingTimer++;
+        if(airplane.shootingTimer == 30){
+          shoot();
+          airplane.shootingTimer = 0;
+        }
+
+      }
+
       Projectile.moveProjectiles(scene);
       Missile.moveMissiles(scene);
       checkCollisions();
