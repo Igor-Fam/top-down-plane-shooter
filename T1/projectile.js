@@ -1,14 +1,20 @@
 import * as THREE from  'three';
+import { missile } from './geometries.js';
 import { GAME_SPEED } from './main.js';
 
 export default class Projectile extends THREE.Object3D{
 
-    constructor(geometry, material, isEnemy = false, isGrounded = false){
+    constructor(geometry, material, isEnemy = false, isGrounded = false, obj = null){
         super(); //Mesh constructor
-        this.add(new THREE.Mesh(geometry, material));
+        if(obj !== null){
+            this.add(obj.clone());
+        } else {
+            this.add(new THREE.Mesh(geometry, material));
+        }
         this.isEnemy = isEnemy;
         this.isGrounded = isGrounded;
-        this.children[0].geometry.computeBoundingSphere(); // gera bounding sphere do projétil
+        if(!this.isGrounded)
+            this.children[0].geometry.computeBoundingSphere(); // gera bounding sphere do projétil
         Projectile.projectiles.push(this); // adiciona projétil a array de projéteis
         this.speed = 6;
         if(isEnemy){

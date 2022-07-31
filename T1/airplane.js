@@ -1,5 +1,12 @@
 import * as THREE from  'three';
+import { degreesToRadians } from '../libs/util/util.js';
 import { plane } from './geometries.js';
+
+const textureLoader = new THREE.TextureLoader();
+const explosion = [];
+for (let i = 1; i < 17; i++) {
+    explosion.push(textureLoader.load("assets/explosion/" + i + ".png"));  
+}
 
 export default class Airplane extends THREE.Object3D{
     
@@ -16,6 +23,7 @@ export default class Airplane extends THREE.Object3D{
         this.damage = 0;
         this.shooting = false;
         this.shootingTimer = 0;
+        this.explosionFrame = -1;
     }
 
     //movimentação
@@ -66,8 +74,25 @@ export default class Airplane extends THREE.Object3D{
     //morte
 
     fall(){
-        this.rotation.y+=0.08;
-        this.position.y-=0.6;
+        if(this.children.length = 1){
+            let explosionGeometry = new THREE.PlaneGeometry(35, 35);
+            let explosionPlane = new THREE.Mesh(explosionGeometry, new THREE.MeshBasicMaterial({transparent: true}))
+            explosionPlane.rotateX(degreesToRadians(-40));
+            this.add(explosionPlane);  
+        }
+        if(this.explosionFrame % 16 == 0){
+            let explosionAudio = new Audio('assets/explosion.mp3');
+            explosionAudio.play();
+        } 
+        if(this.explosionFrame == 53)
+            this.children[0].visible = false;
+        if(this.explosionFrame < 52) {
+            this.explosionFrame ++;
+            this.children[1].material.map = explosion[this.explosionFrame%16];
+        } else {
+            this.remove(this.children[1]);
+            this.children[0].visible = false;
+        }
     }
 
 }

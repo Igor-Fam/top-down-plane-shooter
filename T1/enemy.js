@@ -1,6 +1,7 @@
 import * as THREE from  'three';
 import { PlaneGeometry } from '../build/three.module.js';
 import { degreesToRadians, radiansToDegrees } from '../libs/util/util.js';
+import { missile } from './geometries.js';
 import getPlayerPosition, { GAME_SPEED, scene } from './main.js';
 import Projectile from './projectile.js';
 
@@ -93,14 +94,14 @@ export default class Enemy extends THREE.Object3D{
     }
 
     shoot(){
-        console.log(this.shootingTimer);
         if(!this.canShoot || this.isDead)
             return;
-        let projectileGeometry = this.isGrounded ? new THREE.CylinderGeometry(0.1, 1.8, 8, 32) : new THREE.SphereGeometry(2.8);
+        let projectileGeometry = new THREE.SphereGeometry(2.8);
         let projectile = new Projectile(projectileGeometry,
                             new THREE.MeshLambertMaterial( {color: "rgb(255, 150, 60)"} ),
                             true,
-                            this.isGrounded);
+                            this.isGrounded,
+                            this.isGrounded ? missile : null);
         projectile.translateX(this.position.x);
         projectile.translateY(this.position.y);
         projectile.translateZ(this.position.z);
