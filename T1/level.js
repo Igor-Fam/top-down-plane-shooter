@@ -18,7 +18,7 @@ function delay(time) {
 
 export default async function playLevel(currentFrame) {
   switch(currentFrame) {
-    case 330: createEnemy(-50, 70, -170, E1, 'A', false, -1); break;
+    case 330: createEnemy(-100, 6, -250, launcher, 'A', true, -1); break;
     case 378: createEnemy(50, 70, -170, E1, 'A', false, -1); break;
     case 426: createEnemy(100, 70, -170, E1, 'A', false, -1); break;
     case 474: createEnemy(-100, 70, -170, E1, 'A', false, -1); break;

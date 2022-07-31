@@ -1,10 +1,11 @@
 import * as THREE from  'three';
-export default class Missile extends THREE.Mesh{
+export default class Missile extends THREE.Object3D{
 
-    constructor(geometry, material){
-        super(geometry, material); //Mesh constructor
+    constructor(obj){
+        super(); //Mesh constructor
+        this.add(obj.clone());
+        this.children[0].rotateX(Math.PI);
         this.rotation.x -= 5;
-        this.geometry.computeBoundingBox();
         Missile.missiles.push(this); // adiciona míssil a array de mísseis
         this.castShadow = true;
     }

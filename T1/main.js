@@ -17,7 +17,7 @@ import Recharge from './recharge.js';
 import { damageInfo } from './damageView.js';
 import { DirectionalLight, Object3D, Plane, Vector3 } from '../build/three.module.js';
 import { OrbitControls } from '../build/jsm/controls/OrbitControls.js';
-import { loadGLTFFile, vale, vale2 } from './geometries.js';
+import { loadGLTFFile, missile, vale, vale2 } from './geometries.js';
 import { Water } from '../build/jsm/objects/Water2.js';
 
 export var scene;
@@ -36,7 +36,6 @@ var pause = false;
 export var frameCounter = 0;
 export const GAME_SPEED = 0.3;
 
-var explosionAudio = new Audio('assets/explosion.mp3');
 var bgm = new Audio('assets/bgm.mp3');
 bgm.loop = true;
 bgm.play();
@@ -44,7 +43,7 @@ bgm.play();
 //iluminação
 
 var light = new DirectionalLight("rgb(255, 255, 255)");
-light.position.copy(new Vector3(20, 100, 100));
+light.position.copy(new Vector3(0, 100, 0));
 light.shadow.mapSize.width = 1024;
 light.shadow.mapSize.height = 1024;
 light.castShadow = true;
@@ -70,6 +69,8 @@ var keyboard = new KeyboardState();
 
 
 // create the 2 valleys
+console.log(vale);
+console.log(vale2);
 let plane = new Object3D(); //plane = vale
 plane.add(vale);
 plane.rotateX(-Math.PI/2);
@@ -211,9 +212,11 @@ render();
 let projectileGeometry = new THREE.SphereGeometry(1.5);
 let projectileMaterial = new THREE.MeshLambertMaterial( {color: "rgb(255, 255, 0)"} );
 
-async function shoot(){
+function shoot(){
   if(playerDead)
     return;
+  let shotAudio = new Audio('assets/plane-shot.mp3');
+  shotAudio.play();
   let projectile = new Projectile(projectileGeometry, projectileMaterial);
   projectile.position.set(airplane.position.x, airplane.position.y, airplane.position.z - 10);
   scene.add(projectile);
@@ -221,15 +224,12 @@ async function shoot(){
 
 //lançamento de misseis
 
-let missileGeometry = new THREE.CylinderGeometry(1.8, 1.8, 8, 32);
-let missileMaterial = new THREE.MeshLambertMaterial( {color: "white"} );
-
 function launchMissile(){
   if(playerDead)
     return;
-  let missile= new Missile(missileGeometry, missileMaterial);
-  missile.position.set(airplane.position.x, airplane.position.y, airplane.position.z - 10);
-  scene.add(missile);
+  let playerMissile = new Missile(missile);
+  playerMissile.position.set(airplane.position.x, airplane.position.y, airplane.position.z - 10);
+  scene.add(playerMissile);
 }
 
 //colisões
@@ -241,6 +241,7 @@ function checkCollisions(){
       if(!(Projectile.projectiles[i].isEnemy) && enemies[j].position.y > 60){
         if(intersectSphereBox(Projectile.projectiles[i].children[0], enemies[j])){
           enemies[j].isDead = true;
+          let explosionAudio = new Audio('assets/explosion.mp3');
           explosionAudio.play();
           dyingEnemies.push(enemies[j]);
           enemies.splice(j,1);
@@ -255,20 +256,21 @@ function checkCollisions(){
     for(let i = 0; i<Missile.missiles.length; i++){
       if(enemies[j].position.y < 60){
         if(intersectBoxes(Missile.missiles[i], enemies[j])){
+          let explosionAudio = new Audio('assets/explosion.mp3');
           explosionAudio.play();
           dyingEnemies.push(enemies[j]);
           enemies[j].isDead = true;
           enemies.splice(j,1);
           scene.remove(Missile.missiles[i]);
-          Missile.missiles[i].geometry.dispose();
-          Missile.missiles[i].material.dispose();
           Missile.missiles.splice(i, 1);
         }
       }
     }
 
     //colisão do avião com inimigo do ar, dano 2
-    if(intersectBoxes(airplane.children[0], enemies[j])){
+    if(intersectBoxes(airplane.children[0], enemies[j]) && !playerDead){
+      let explosionAudio = new Audio('assets/explosion.mp3');
+      explosionAudio.play();
       dyingEnemies.push(enemies[j]);
       enemies[j].isDead = true;
       enemies.splice(j,1);
@@ -281,15 +283,29 @@ function checkCollisions(){
   //colidir projéteis do inimigo com jogador
   for(let i = 0; i<Projectile.projectiles.length; i++){
     if(Projectile.projectiles[i].isEnemy){
-      if(intersectSphereBox(Projectile.projectiles[i].children[0], airplane.children[0])){
-        if(!godMode)
-          airplane.hit(1);
-        updateDamageView();
-        scene.remove(Projectile.projectiles[i]);
-        Projectile.projectiles[i].children[0].geometry.dispose();
-        Projectile.projectiles[i].children[0].material.dispose();
-        Projectile.projectiles.splice(i, 1);
-      } 
+      if(Projectile.projectiles[i].isGrounded){
+        if(intersectBoxes(Projectile.projectiles[i].children[0], airplane.children[0]) && !playerDead){
+          let explosionAudio = new Audio('assets/explosion.mp3');
+          explosionAudio.play();
+          if(!godMode)
+            airplane.hit(1);
+          updateDamageView();
+          scene.remove(Projectile.projectiles[i]);
+          Projectile.projectiles.splice(i, 1);
+        } 
+      } else {
+        if(intersectSphereBox(Projectile.projectiles[i].children[0], airplane.children[0]) && !playerDead){
+          let explosionAudio = new Audio('assets/explosion.mp3');
+          explosionAudio.play();
+          if(!godMode)
+            airplane.hit(1);
+          updateDamageView();
+          scene.remove(Projectile.projectiles[i]);
+          Projectile.projectiles[i].children[0].geometry.dispose();
+          Projectile.projectiles[i].children[0].material.dispose();
+          Projectile.projectiles.splice(i, 1);
+        } 
+      }
     }
   }
 
@@ -320,7 +336,7 @@ function removeEnemies(){
   
   for(let i = 0; i<dyingEnemies.length; i++){
     dyingEnemies[i].fall();
-    if(dyingEnemies[i].children[0].scale.x<=0){
+    if(dyingEnemies[i].explosionFrame >= 15){
       scene.remove(dyingEnemies[i]);
       dyingEnemies.splice(i,1);
     }  
@@ -331,21 +347,20 @@ function removeEnemies(){
 // animação de queda do avião e reinício do jogo
 function gameOver(){
   airplane.fall();
-  if(airplane.position.y < 0){
-
+  if(airplane.explosionFrame >= 53){
     scene.remove(airplane);
 
     Projectile.projectiles.forEach(projectile => {
       scene.remove(projectile);
-      projectile.children[0].geometry.dispose();
-      projectile.children[0].material.dispose();
+      if(!projectile.isGrounded){
+        projectile.children[0].geometry.dispose();
+        projectile.children[0].material.dispose();
+      }
     });
     Projectile.projectiles = [];
 
-    Missile.missiles.forEach(missile => {
-      scene.remove(missile);
-      missile.geometry.dispose();
-      missile.material.dispose();
+    Missile.missiles.forEach(playerMissile => {
+      scene.remove(playerMissile);
     });
     Missile.missiles = [];
 
@@ -454,31 +469,6 @@ export function finishLevel(){
   levelFinished = true;
 }
 
-
-export function Timer(callback, delay) {
-  var args = arguments,
-      self = this,
-      timer, start;
-
-  this.clear = function () {
-      clearTimeout(timer);
-  };
-
-  this.pause = function () {
-      this.clear();
-      delay -= new Date() - start;
-  };
-
-  this.resume = function () {
-      start = new Date();
-      timer = setTimeout(function () {
-          callback.apply(self, Array.prototype.slice.call(args, 2, args.length));
-      }, delay);
-  };
-
-  this.resume();
-}
-
 function render()
 {
   scroller.translateZ(GAME_SPEED);
@@ -487,10 +477,12 @@ function render()
   renderer.render(scene, camera) // Render scene
   if(!pause){
     frameCounter ++;
-    playLevel(frameCounter);
-    movingPlanes();
-    moveEnemies();
-    moveRecharges();
+    if(!playerDead){
+      playLevel(frameCounter);
+      movingPlanes();
+      moveEnemies();
+      moveRecharges();
+    }
     if(!levelFinished){
       if(airplane.shooting){
         airplane.shootingTimer++;

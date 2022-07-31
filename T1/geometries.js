@@ -46,8 +46,12 @@ export function loadGLTFFile(modelName, visibility, desiredScale, object)
     obj.visible = visibility;
     obj.traverse( function ( child ) {
       if ( child ) {
+<<<<<<< HEAD
           //child.castShadow = true;
           //child.receiveShadow = true;
+=======
+          child.castShadow = true;
+>>>>>>> 5a25cca6ce1228a000e8319f322dd90ff7dc3309
       }
     });
     obj.traverse( function( node )
@@ -57,8 +61,7 @@ export function loadGLTFFile(modelName, visibility, desiredScale, object)
 
     var obj = normalizeAndRescale(obj, desiredScale);
     var obj = fixPosition(obj);
-    console.log(object);
-    if(modelName == "vale"){
+    if(modelName == "vale" || modelName == "missile"){
       object.add(obj.children[0].clone());
     } else {
       obj.children[0].children[(modelName == "plane" ? 0 : 1)].children.forEach(mesh => {
@@ -156,6 +159,9 @@ loadGLTFFile("E3", true, 1, E3);
 
 export let missile = new Object3D;
 loadGLTFFile("missile",true,1,missile);
+missile.scale.x = 3.5
+missile.scale.y = 3.5
+missile.scale.z = 3.5
 
 export let launcher = new Object3D;
 loadOBJFile("launcher", true, 1, launcher);
@@ -166,7 +172,9 @@ launcher.scale.z = 0.01
 export let vale = new Object3D;
 loadGLTFFile("vale", true, 1, vale);
 vale.rotateX(degreesToRadians(90));
+vale.receiveShadow = true;
 
 export let vale2 = new Object3D;
 loadGLTFFile("vale", true, 1, vale2);
 vale2.rotateX(degreesToRadians(90));
+vale2.receiveShadow = true;

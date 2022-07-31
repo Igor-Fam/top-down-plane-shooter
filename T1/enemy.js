@@ -1,7 +1,15 @@
 import * as THREE from  'three';
-import { radiansToDegrees } from '../libs/util/util.js';
+import { PlaneGeometry } from '../build/three.module.js';
+import { degreesToRadians, radiansToDegrees } from '../libs/util/util.js';
+import { missile } from './geometries.js';
 import getPlayerPosition, { GAME_SPEED, scene } from './main.js';
 import Projectile from './projectile.js';
+
+const textureLoader = new THREE.TextureLoader();
+const explosion = [];
+for (let i = 1; i < 17; i++) {
+    explosion.push(textureLoader.load("assets/explosion/" + i + ".png"));  
+}
 
 export default class Enemy extends THREE.Object3D{
 
@@ -9,14 +17,14 @@ export default class Enemy extends THREE.Object3D{
         super();
         this.add(obj.clone());
         if(isGrounded){
-            this.children[0].scale.x = 0.0012
-            this.children[0].scale.y = 0.0012
-            this.children[0].scale.z = 0.0012
-            this.children[0].rotateY(Math.PI/2)
+            this.children[0].scale.x = 0.0012;
+            this.children[0].scale.y = 0.0012;
+            this.children[0].scale.z = 0.0012;
+            this.children[0].rotateY(Math.PI/2);
         } else {
-            this.children[0].scale.x = 2.5
-            this.children[0].scale.y = 2.5
-            this.children[0].scale.z = 2.5
+            this.children[0].scale.x = 2.5;
+            this.children[0].scale.y = 2.5;
+            this.children[0].scale.z = 2.5;
         }
         this.direction = direction;
         this.ZSpeed = (isGrounded ? GAME_SPEED : 0.9) * (type == 'B' ? direction*-1 : 1 );
@@ -29,6 +37,7 @@ export default class Enemy extends THREE.Object3D{
         this.isDead = false;
         this.canShoot = true;
         this.shootingTimer = 70;
+        this.explosionFrame = -1;
     }
 
     canMove(){
@@ -66,24 +75,33 @@ export default class Enemy extends THREE.Object3D{
     }
     
     fall(){
-        if(this.children[0].scale.x > 0){
-            this.children[0].rotation.y+=0.08;
-            this.children[0].position.y-=0.6;
-            this.children[0].scale.x -= 0.02;
-            this.children[0].scale.y -= 0.02;
-            this.children[0].scale.z -= 0.02;
+        if(this.children.length = 1){
+            let explosionGeometry = new PlaneGeometry(35, 35);
+            let explosionPlane = new THREE.Mesh(explosionGeometry, new THREE.MeshBasicMaterial({transparent: true}))
+            if(this.isGrounded)
+                explosionPlane.translateY(10);
+            explosionPlane.rotateX(degreesToRadians(-40));
+            this.add(explosionPlane);  
+        }
+        if(this.explosionFrame == 8)
+            this.children[0].visible = false;
+        if(this.explosionFrame < 15) {
+            this.explosionFrame ++;
+            this.children[1].material.map = explosion[this.explosionFrame];
+        } else {
+            this.remove(this.children[1]);
         }
     }
 
     shoot(){
-        console.log(this.shootingTimer);
         if(!this.canShoot || this.isDead)
             return;
-        let projectileGeometry = this.isGrounded ? new THREE.CylinderGeometry(0.1, 1.8, 8, 32) : new THREE.SphereGeometry(2.8);
+        let projectileGeometry = new THREE.SphereGeometry(2.8);
         let projectile = new Projectile(projectileGeometry,
                             new THREE.MeshLambertMaterial( {color: "rgb(255, 150, 60)"} ),
                             true,
-                            this.isGrounded);
+                            this.isGrounded,
+                            this.isGrounded ? missile : null);
         projectile.translateX(this.position.x);
         projectile.translateY(this.position.y);
         projectile.translateZ(this.position.z);
@@ -106,6 +124,8 @@ export default class Enemy extends THREE.Object3D{
         } else {
             projectile.lookAt(playerPosition);
         }
+        let explosionAudio = new Audio('assets/enemy-shot.mp3');
+        explosionAudio.play();
         scene.add(projectile);
         this.shootingTimer = 0;
     }
