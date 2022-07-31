@@ -34,6 +34,7 @@ var shooting = false;
 var playerDead = false;
 var levelFinished;
 var pause = false;
+export var frameCounter = 0;
 export const GAME_SPEED = 0.3;
 
 var explosionAudio = new Audio('assets/explosion.mp3');
@@ -72,6 +73,7 @@ var keyboard = new KeyboardState();
 // create the 2 ground planes
 let plane = new Object3D();
 plane.add(vale);
+plane.children[0].receiveShadow = true;
 plane.rotateX(-Math.PI/2);
 plane.scale.x= 120;
 plane.scale.y= 150;
@@ -97,21 +99,21 @@ const params = {
   flowY: 1
 };
 
-				// water
+// water
 
-				const waterGeometry = new THREE.PlaneGeometry( 400, 800 );
+const waterGeometry = new THREE.PlaneGeometry( 400, 800 );
 
-				var water = new Water( waterGeometry, {
-					color: params.color,
-					scale: params.scale,
-					flowDirection: new THREE.Vector2( params.flowX, params.flowY ),
-					textureWidth: 300,
-					textureHeight: 300
-				} );
+var water = new Water( waterGeometry, {
+  color: params.color,
+  scale: params.scale,
+  flowDirection: new THREE.Vector2( params.flowX, params.flowY ),
+  textureWidth: 300,
+  textureHeight: 300
+} );
 
-				water.position.y = 1;
-				water.rotation.x = Math.PI * - 0.5;
-				scene.add( water );
+water.position.y = 1;
+water.rotation.x = Math.PI * - 0.5;
+scene.add( water );
 
 // criação do avião
 var airplane = new Airplane();

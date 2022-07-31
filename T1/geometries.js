@@ -47,6 +47,7 @@ export function loadGLTFFile(modelName, visibility, desiredScale, object)
     obj.traverse( function ( child ) {
       if ( child ) {
           child.castShadow = true;
+          child.receiveShadow = true;
       }
     });
     obj.traverse( function( node )
