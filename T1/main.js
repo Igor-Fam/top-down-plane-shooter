@@ -72,7 +72,6 @@ var keyboard = new KeyboardState();
 // create the 2 valleys
 let plane = new Object3D(); //plane = vale
 plane.add(vale);
-plane.children[0].receiveShadow = true;
 plane.rotateX(-Math.PI/2);
 plane.scale.x= 120;
 plane.scale.y= 150;
@@ -109,6 +108,7 @@ var water = new Water( waterGeometry, {
   textureWidth: 300,
   textureHeight: 300
 } );
+
 
 water.position.y = 1;
 water.rotation.x = Math.PI * - 0.5;
