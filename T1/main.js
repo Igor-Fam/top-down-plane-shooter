@@ -27,7 +27,7 @@ export var scroller = new Object3D();
 scene.add(scroller);
 renderer = initRenderer();    // Init a basic renderer
 camera = initCamera(new THREE.Vector3(0, 300, 200)); // Init camera in this position
-orbit = new OrbitControls( camera, renderer.domElement ); // Enable mouse rotation, pan, zoom etc
+//orbit = new OrbitControls( camera, renderer.domElement ); // Enable mouse rotation, pan, zoom etc
 
 var godMode = false;
 var playerDead = false;
