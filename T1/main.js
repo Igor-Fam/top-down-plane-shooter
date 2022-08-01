@@ -473,6 +473,7 @@ function render()
 {
   scroller.translateZ(GAME_SPEED);
   keyboardUpdate();
+  bgm.play()
   requestAnimationFrame(render); // Show events
   renderer.render(scene, camera) // Render scene
   if(!pause){
