@@ -11,8 +11,8 @@ import {
 	Vector2,
 	Vector4
 } from 'three';
-import { Reflector } from '../objects/Reflector.js';
-import { Refractor } from '../objects/Refractor.js';
+import { Reflector } from './Reflector.js';
+import { Refractor } from './Refractor.js';
 
 /**
  * References:
@@ -44,8 +44,8 @@ class Water extends Mesh {
 		const textureLoader = new TextureLoader();
 
 		const flowMap = options.flowMap || undefined;
-		const normalMap0 = options.normalMap0 || textureLoader.load( '../../../assets/textures/Water_1_M_Normal.jpg' );
-		const normalMap1 = options.normalMap1 || textureLoader.load( '../../../assets/textures/Water_2_M_Normal.jpg' );
+		const normalMap0 = options.normalMap0 || textureLoader.load( './assets/Water_1_M_Normal.jpg' );
+		const normalMap1 = options.normalMap1 || textureLoader.load( './assets/Water_2_M_Normal.jpg' );
 
 		const cycle = 0.15; // a cycle of a flow map phase
 		const halfCycle = cycle * 0.5;

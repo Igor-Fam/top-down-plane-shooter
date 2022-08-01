@@ -18,7 +18,7 @@ import { damageInfo } from './damageView.js';
 import { DirectionalLight, Object3D, Plane, Vector3 } from '../build/three.module.js';
 import { OrbitControls } from '../build/jsm/controls/OrbitControls.js';
 import { loadGLTFFile, missile, vale, vale2 } from './geometries.js';
-import { Water } from '../build/jsm/objects/Water2.js';
+import { Water } from './Water2.js';
 
 export var scene;
 let renderer, camera, orbit; // Initial variables
