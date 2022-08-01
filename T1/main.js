@@ -38,7 +38,6 @@ export const GAME_SPEED = 0.3;
 
 var bgm = new Audio('assets/bgm.mp3');
 bgm.loop = true;
-bgm.play();
 
 //iluminação
 
@@ -471,6 +470,7 @@ export function finishLevel(){
 
 function render()
 {
+  bgm.play();
   scroller.translateZ(GAME_SPEED);
   keyboardUpdate();
   requestAnimationFrame(render); // Show events
