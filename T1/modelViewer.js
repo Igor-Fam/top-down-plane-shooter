@@ -56,7 +56,7 @@ loadGLTFFile('assets/', 'E1', false, 2.0);
 loadGLTFFile('assets/', 'E2', false, 2.0);
 loadGLTFFile('assets/', 'E3', false, 2.0);
 loadGLTFFile('assets/', 'Plane', false, 2.0);
-loadGLTFFile('assets/', 'vale', false, 2.0);
+loadGLTFFile('assets/', 'missile', false, 1.0);
 
 buildInterface();
 render();
